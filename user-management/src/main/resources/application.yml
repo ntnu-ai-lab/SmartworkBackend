@@ -1,0 +1,41 @@
+elasticsearch:
+  #   comma separated
+  hosts: localhost:9200, localhost:9201
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  ### Only for testing individual microservices, remove during deployment.
+  client:
+    enabled: true
+server.port: 8013
+
+microservices:
+  limesurvey-service:
+    endpoints:
+      activatePatientLSInfo: http://limesurvey-service/dashboard/activateLSInfo
+
+spring:
+  application:
+    name: user-management
+  #   eligibility answers
+  data:
+    elasticsearch:
+      node:
+        name: elasticsearch
+  #   patients database
+  datasource:
+    password: smartwork
+    url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
+    username: smartwork
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: false
+    #        non spring-framework properties
+    field-encryption:
+      password: cEW3qt63PA7RmfwTNSxvRCQ9NBcCVZpNUpVFbNf64EP9yz
+      salt: 919529cb234fb83e
