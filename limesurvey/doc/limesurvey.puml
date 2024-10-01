@@ -1,0 +1,73 @@
+@startuml limesurvey
+' https://plantuml.com/sequence-diagram
+title SupportPrim Limesurvey
+skinparam maxMessageSize 80
+'autoactivate on
+
+'actor "Patient" as User
+entity "User Management Service" as usermgmt
+entity "LimeSurvey Service" as limesurveySrvc
+participant "LimeSurvey" as limesurvey
+database "Questionnaire DB" as questionnaireDB
+database "LS Patient Info" as patinetQuestionnaireDB
+entity "Elasticsearch Service" as elactic
+
+note over questionnaireDB
+tokenId (key)
+surveyId
+patientId
+type (baseline1, followup2,..)
+validUntil
+remindersLeft
+lastReminder
+completedDate
+end note
+
+/note over patinetQuestionnaireDB
+patientId
+// activeSurvey
+firstName,
+lastName,
+email(encrypted),
+phone(encrypted),
+language
+PSFSAct
+end note
+
+
+[-> usermgmt ++: new Patient
+usermgmt -> limesurveySrvc --++: activateSurvey(...,baseline1, null)
+
+limesurveySrvc -> patinetQuestionnaireDB: save(username, firstname, lastname, email, phone, )
+
+limesurveySrvc -> limesurvey ++: activateSurvey
+return tokenId
+limesurveySrvc -> questionnaireDB: save(patientId, type, tokenId,...)
+deactivate limesurveySrvc
+...
+alt No questionnaire submission in X days
+    limesurveySrvc -> questionnaireDB ++ : getInfo()
+    activate limesurveySrvc
+    return
+    limesurveySrvc -> limesurvey: Reminder e-mail - 3 e-mails every 2 days
+    deactivate limesurveySrvc
+end
+...
+limesurvey -> limesurveySrvc++: completedQuestionnaire
+limesurveySrvc -> elactic: questionnaire
+limesurveySrvc -> questionnaireDB: set completedDate
+limesurveySrvc -> patinetQuestionnaireDB: set PSFS_activity_name
+'limesurveySrvc -> patinetQuestionnaireDB: reset activeSurvey
+deactivate limesurveySrvc
+...
+limesurveySrvc -> questionnaireDB++: find all patients with completed baseline and inactive followupN
+activate limesurveySrvc
+return patientID
+limesurveySrvc -> limesurveySrvc: is within activation interval?
+limesurveySrvc -> limesurvey ++: activateSurvey(...,followupN, baselinePSFSvalue)
+return tokenId
+limesurveySrvc -> questionnaireDB: save(patientId, type, tokenId,...)
+deactivate limesurveySrvc
+
+
+@enduml
