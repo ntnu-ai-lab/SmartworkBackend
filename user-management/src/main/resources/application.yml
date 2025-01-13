@@ -25,15 +25,18 @@ spring:
         name: elasticsearch
   #   patients database
   datasource:
-    password: smartwork
-    url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
-    username: smartwork
+    #password: smartwork
+    #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
+    #username: smartwork
+  url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
+  username: adm_smartwork
+  password: BMhwQTcLZK6qdz.
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
     show-sql: false
     #        non spring-framework properties
     field-encryption:

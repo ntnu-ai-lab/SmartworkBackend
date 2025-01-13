@@ -52,7 +52,7 @@ public class QuestionnaireService {
     /**
      * Retrieves patient information saved earlier on baseline activation.
      *
-     * @param questionnaire baseline1, followup2 or followup3
+     * @param questionnaire baseline, followup1 or followup2 or followup3
      * @return LimeSurvey ID (tid)
      * @throws Exception
      */
@@ -110,7 +110,7 @@ public class QuestionnaireService {
 
         final Optional<QuestionnaireConfig> baselineOpt = questionnaireSettings.getFirstQuestionnaire();
         log.info("ACTIVATE BASELINE FUNCTION..");
-        log.info("This is baseine Opt : " + baselineOpt);
+        log.info("This is baseline Opt : " + baselineOpt);
         if (!baselineOpt.isPresent())
             throw new IllegalStateException("Baseline questionnaire is not configured. It is the questionnairere with 'starts: PT0m'");
         final QuestionnaireConfig baseline = baselineOpt.get();
@@ -134,26 +134,26 @@ public class QuestionnaireService {
                 null
         ));
 
+        QuestionnaireConfig followup1 = questionnaireSettings.getQuestionnaires().get("followup1");
+        Date followup1StartDay = Date.from(Instant.now().plus(followup1.getStartDay()));
+        //log.info("Followup1 Start Day: {}", followup1StartDay.toInstant());
+
         QuestionnaireConfig followup2 = questionnaireSettings.getQuestionnaires().get("followup2");
         Date followup2StartDay = Date.from(Instant.now().plus(followup2.getStartDay()));
         //log.info("Followup2 Start Day: {}", followup2StartDay.toInstant());
 
         QuestionnaireConfig followup3 = questionnaireSettings.getQuestionnaires().get("followup3");
         Date followup3StartDay = Date.from(Instant.now().plus(followup3.getStartDay()));
-        //log.info("Followup3 Start Day: {}", followup3StartDay.toInstant());
-
-        QuestionnaireConfig followup4 = questionnaireSettings.getQuestionnaires().get("followup4");
-        Date followup4StartDay = Date.from(Instant.now().plus(followup4.getStartDay()));
 
         //Update response in LsPatientInfoEntity Table
         final LSPatientInfoEntity lsPatientInfo = patientInfoRepository.findByPatientId(patient.getPatientId());
         final LSPatientInfoEntity updatedlsPatientInfo = lsPatientInfo.toBuilder()
-                                                        .called(true)
+                                                        .consented(true)
                                                         .activeStatus("active")
                                                         .baselineActivated(Date.from(Instant.now()))
+                                                        .follwoup1Date(followup1StartDay)
                                                         .follwoup2Date(followup2StartDay)
-                                                        .follwoup3Date(followup3StartDay)
-                                                        .follwoup4Date(followup4StartDay).build();
+                                                        .follwoup3Date(followup3StartDay).build();
         patientInfoRepository.save(updatedlsPatientInfo);
 
 
@@ -161,9 +161,9 @@ public class QuestionnaireService {
                 // Prepare response map with dates
         Map<String, Object> response = new HashMap<>();
         response.put("BaseLineDate", validUntil.toInstant());
+        response.put("Followup1Date", followup1StartDay.toInstant());
         response.put("Followup2Date", followup2StartDay.toInstant());
         response.put("Followup3Date", followup3StartDay.toInstant());
-        response.put("Followup4Date", followup4StartDay.toInstant());
         //log.info("Response Map {}", response);
         return response;
 
@@ -334,7 +334,7 @@ public class QuestionnaireService {
             } else {
                 // Getting all baselines that are open, have reminders left, and the duration since the last reminder has passed
                 final List<LSQuestionnaireEntity> openBaselines
-                        = questionnaireRepository.findAllByTypeAndCompletedDateAndLastReminderBefore("baseline1", null, Date.from(Instant.now().minus(config.getReminderInterval())));
+                        = questionnaireRepository.findAllByTypeAndCompletedDateAndLastReminderBefore("baseline", null, Date.from(Instant.now().minus(config.getReminderInterval())));
                 for (final LSQuestionnaireEntity openBL : openBaselines) {
                     // check whether there are still reminders allowed to be send, if so, send the reminder
                     // TODO : check for sending reminder after completed date is corrected. Uncomment after editing above.
@@ -363,7 +363,7 @@ public class QuestionnaireService {
      * Updates PSFS value in the database if it is baseline.
      * The PSFS values is to be passed to the followup questionnaires.
      * @param tokenID a tokeID, not token itself
-     * @param questionnaireType    baseline1/followup2/followup3
+     * @param questionnaireType    baseline/followup1/followup2/followup3
      * @param answers a map of questionid -> answer
      */
     public void addQuestionnaire(String tokenID, String questionnaireType, Map<String, String> answers) {
@@ -377,9 +377,10 @@ public class QuestionnaireService {
         if (!patientInfoOpt.isPresent())
             throw new IllegalStateException("There is no information about the patient ID " + patientId);
         log.info("Adding questionnaire to the patient {} ({})", patientId, questionnaireType);
-        //TODO : Connect to ElasticService (AV)
+
       //elasticsearchService.saveQuestionnaire(patientId, null, questionnaireType, answers);
         elasticsearchService.saveQuestionnaire(patientId, questionnaireType, answers);
+
 
         final LSQuestionnaireEntity updatedQuestionnaireInfo = questionnaire.toBuilder()
                 .completedDate(new Date()).build();
@@ -396,6 +397,11 @@ public class QuestionnaireService {
                     .PSFSAct(answers.get(Attributes.PSFSAct))
                     .baselineCompleted(new Date())
                     .build();
+        } else if (questionnaireType.equalsIgnoreCase("Followup1")) {
+            // Update followup1 completed date
+            updatedPatientInfo = patientInfo.toBuilder()
+                    .follwoup1Completed(new Date())
+                    .build();
         } else if (questionnaireType.equalsIgnoreCase("Followup2")) {
             // Update followup2 completed date
             updatedPatientInfo = patientInfo.toBuilder()
@@ -405,11 +411,6 @@ public class QuestionnaireService {
             // Update followup3 completed date
             updatedPatientInfo = patientInfo.toBuilder()
                     .follwoup3Completed(new Date())
-                    .build();
-        } else if (questionnaireType.equalsIgnoreCase("Followup4")) {
-            // Update followup4 completed date
-            updatedPatientInfo = patientInfo.toBuilder()
-                    .follwoup4Completed(new Date())
                     .build();
         }
 

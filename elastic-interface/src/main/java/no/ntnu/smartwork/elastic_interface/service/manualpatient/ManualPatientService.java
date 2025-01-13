@@ -33,7 +33,7 @@ public interface ManualPatientService {
     public ManualPatient updateManualPatient(ManualPatient manualPatient);
 
     /**
-     * Method to save the collection of SupportPrim manually crafted patient data in the database.
+     * Method to save the collection of SmartWork manually crafted patient data in the database.
      * @param manualPatients
      * @return
      */

@@ -51,47 +51,29 @@ public class OnboardingController {
         onboardingService.registerNewPatient(newPatient);
     }
 
-    /**
-     * Adding clinicians to the database.
-     * @see #handleValidationExceptions(MethodArgumentNotValidException)
-     */
     /*
-    @PostMapping(value = "clinician")
-    public void postRegisterNewClinician(@Valid @RequestBody NewClinicianBean NewClinician) {
-        onboardingService.registerNewClinician(NewClinician);
-    }
- */
     /**
-     * Getting all clinicians for one clinic froms the database.
-     * @see #handleValidationExceptions(MethodArgumentNotValidException)
-     * @return
-     */
-	/*
-	@GetMapping(value = "getCliniciansByClinic/{clinicID}")
-	public List<ClinicianEntity> getCliniciansByClinic(@PathVariable String clinicID) {
-		List<ClinicianEntity> clinicians = clinicRepository.findByClinicID(clinicID);
+     * This function takes query param to check if user is already available in eligibility repo,
+     Function no longer needed since we have same link for everyone.
 
-		if (!clinicians.isEmpty()) {
-			return clinicians;
-		} else {
-			throw new IllegalStateException("No clinicians for clinicID");
-		}
-	}*/
-
-    @GetMapping(value = "getOnboardingStatus/{navID}")
-    public ResponseEntity<String> getOnboardingStatus(@PathVariable String navID) {
+    @GetMapping(value = "sendFromStatus/{navID}")
+    public ResponseEntity<String> sendFromStatus(@PathVariable String navID) {
         System.out.println("Recieved Nav id is : "+navID);
-        PatientEntity existingPatient = patientRepository.findByNavId(navID);
-        System.out.println("patient found should be Null: "+existingPatient);
-
-        // Return a response indicating no patient found
-        if (existingPatient != null) {
-            //throw new IllegalStateException("User is already registered!");
-            return new ResponseEntity<>("User is already registered!", HttpStatus.CONFLICT);
+        // Process the incoming navID and assign a new value based on source
+        if ("G1".equals(navID.trim())) {
+            navID = "GP"; // Update navID to "GP"
+            System.out.println("Nav id is : "+navID);
+        } else if ("N0".equals(navID)) {
+            navID = "NAV"; // Update navID to "NAV"
+        } else if (navID == null || navID.trim().isEmpty()) {
+            navID = null; // Update navID to null
+        }
+        if (navID == null) {
+            return new ResponseEntity<>("wrong link!", HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>("Proceed", HttpStatus.OK);
         }
-    }
+    }*/
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

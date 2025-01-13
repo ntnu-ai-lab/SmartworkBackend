@@ -17,7 +17,7 @@ public class PatientXmlServiceImpl implements PatientXmlService {
     private PatientXmlRepository patientXmlDao;
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientXml.PatientXmlService#savePatientXml(java.util.List)
+     * @see no.ntnu.smartwork.elastic_interface.service.patientXml.PatientXmlService#savePatientXml(java.util.List)
      */
     @Override
     public PatientXml savePatientXml(PatientXml patient) {
@@ -26,7 +26,7 @@ public class PatientXmlServiceImpl implements PatientXmlService {
     }
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientXml.PatientXmlService#savePatientXmls(java.util.List)
+     * @see no.ntnu.smartwork.elastic_interface.service.patientXml.PatientXmlService#savePatientXmls(java.util.List)
      */
     @Override
     public Iterable<PatientXml> savePatientXmls(List<PatientXml> patientXmls) {
@@ -36,7 +36,7 @@ public class PatientXmlServiceImpl implements PatientXmlService {
     }
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientXml.PatientXmlService#findAllPatientXmls()
+     * @see no.ntnu.smartwork.elastic_interface.service.patientXml.PatientXmlService#findAllPatientXmls()
      */
     @Override
     public Iterable<PatientXml> findAllPatientXmls() {

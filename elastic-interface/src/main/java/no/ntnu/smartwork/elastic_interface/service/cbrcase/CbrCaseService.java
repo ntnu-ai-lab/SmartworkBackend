@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CbrCaseService {
     /**
-     * Method to save the collection of SupportPrim patient data in the database.
+     * Method to save the collection of SmartWork patient data in the database.
      * @param cbrCases
      */
     public void saveCbrCases(List<CbrCase> cbrCases);

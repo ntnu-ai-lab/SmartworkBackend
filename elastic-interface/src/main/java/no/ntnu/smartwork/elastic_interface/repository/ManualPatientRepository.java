@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * @author: Amar Jaiswal
+ * @author: Anuja Vats
  */
 @Repository
 public interface ManualPatientRepository extends ElasticsearchRepository<ManualPatient, String> {

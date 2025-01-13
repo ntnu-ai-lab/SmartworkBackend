@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 /**
- * @author: Amar Jaiswal, Anuja VaTS
+ * @author: Amar Jaiswal, Anuja Vats
  */
 @Component
 @Document(indexName = "#{@environment.getProperty('elasticsearch.index.infopad.patient.xml')}") // infopad_patient_xmls - name must be lower case

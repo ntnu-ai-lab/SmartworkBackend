@@ -24,7 +24,7 @@ public class LSQuestionnaireEntity {
     private String tokenId;
     private String surveyId;
     private String patientId;
-    /**baseline1, followup2 or followup3*/
+    /**baseline, followup1, followup2 or followup3*/
     private String type;
     @Temporal(TemporalType.TIMESTAMP)
     private Date validUntil;

@@ -5,7 +5,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 /**
- * @author: Amar Jaiswal
+ * @author: Anuja Vats
  */
 @Repository
 public interface CbrCaseRepository extends ElasticsearchRepository<CbrCase, String> {

@@ -20,15 +20,19 @@ spring:
         name: elasticsearch
   #   patients database
   datasource:
-    password: smartwork
-    url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
-    username: smartwork
+    #password: smartwork
+    #username: smartwork
+    #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
+    url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
+    username: adm_smartwork
+    password: BMhwQTcLZK6qdz.
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
     show-sql: false
     field-encryption:
       password: cEW3qt63PA7RmfwTNSxvRCQ9NBcCVZpNUpVFbNf64EP9yz
@@ -53,11 +57,11 @@ limesurvey:
 
 
   #   common settings, optional, just to make
-  #    survey_id: 978454
+  #    survey_id:438751
   # Short test survey
   survey_id: 322721 #202202 for spdev and 322721 for SW-dev  and ... for SW-RCT
   reminder_count: 2
-  reminder_interval: P2d #P2d #PT60M for testing, P3d for deployments
+  reminder_interval: P3d #P2d #PT60M for testing, P3d for deployments
   # see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
   # for duration format.
   valid_duration_weekly: P10d #this valid duration is applied to the weekly questionnaires
@@ -65,8 +69,8 @@ limesurvey:
   #    Instead of references to common settings you can assign different values for every questionnaire
   questionnaires:
     # To disable a questionnaire just comment/delete it.
-    baseline1:
-      type: baseline1
+    baseline:
+      type: baseline
       #The time interval from the completion of the baseline questionnaire
       # when to start specified one. If for some reason (e.g. the backend was offline)
       # the questionnaire was not started within valid_duration interval after that
@@ -77,8 +81,8 @@ limesurvey:
       reminder_interval: ${limesurvey.reminder_interval}
       valid_duration: ${limesurvey.valid_duration_questionnaires}
 
-    followup2:
-      type: followup2
+    followup1:
+      type: followup1
       #startDay: P90d  #in 3 month
       startDay: PT15M  #in 15 min
       survey_id: ${limesurvey.survey_id}
@@ -86,8 +90,8 @@ limesurvey:
       reminder_interval: ${limesurvey.reminder_interval}
       valid_duration: ${limesurvey.valid_duration_questionnaires}
 
-    followup3:
-      type: followup3
+    followup2:
+      type: followup2
       #startDay: P180d  #in 6 month
       startDay: PT30M  #in 30 min
       survey_id: ${limesurvey.survey_id}
@@ -95,8 +99,8 @@ limesurvey:
       reminder_interval: ${limesurvey.reminder_interval}
       valid_duration: ${limesurvey.valid_duration_questionnaires}
 
-    followup4:
-      type: followup4
+    followup3:
+      type: followup3
       #startDay: 210d  #in 12 month
       startDay: PT40M  #in 40 min
       survey_id: ${limesurvey.survey_id}

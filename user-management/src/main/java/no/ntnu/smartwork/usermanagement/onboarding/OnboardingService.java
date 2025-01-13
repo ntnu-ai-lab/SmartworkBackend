@@ -52,10 +52,7 @@ public class OnboardingService {
     public void registerNewPatient(NewPatientBean newPatient) {
 
         final Optional<EligibilityDocument> eligibility = eligibilityRepository.findById(newPatient.getEligibilityId());
-        //final List<ClinicianEntity> clinic = clinicRepository.findByClinicianID(newPatient.getClinicianId());
-
         log.info("search for patientID: {} , phone: {}, email: {} ", newPatient.getPatientId(), newPatient.getPhone(), newPatient.getEmail() );
-        //log.info("search for clinicGroup: {} ", clinic.get(0).getRctgroup() );
 
         PatientEntity existingEmail = patientRepository.findByEmail(newPatient.getEmail());
         PatientEntity existingPhone = patientRepository.findByPhone(newPatient.getPhone());
@@ -94,29 +91,9 @@ public class OnboardingService {
         final EligibilityDocument updatedEligiblity = eligibility.get().toBuilder().patientId(newPatient.getPatientId()).build();
         final EligibilityDocument savedDocument = eligibilityRepository.save(updatedEligiblity);
         activatePatientLSInfo(newPatient);
-        //activateBaseline(newPatient);
+
     }
     public void activatePatientLSInfo(NewPatientBean newPatient){
         restTemplate.postForLocation(activateLSInfoURL, newPatient);
     }
-
-    //public void activateBaseline(NewPatientBean newPatient){
-     //   restTemplate.postForLocation(activateBaselineURL, newPatient);
-    //}
-
-    /*
-    public void registerNewClinician(NewClinicianBean newClinician) {
-
-        clinicRepository.save(ClinicianEntity.builder()
-                .clinicID(newClinician.getClinicID())
-                .clinicianID(newClinician.getClinicianID())
-                .clinicName(newClinician.getClinicName())
-                .firstname(newClinician.getFirstname())
-                .lastname(newClinician.getLastname())
-                .email(newClinician.getEmail())
-                .rctgroup(newClinician.getRctgroup())
-                .build());
-
-    }*/
-
 }

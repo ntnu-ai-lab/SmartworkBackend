@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
 /**
- * @see no.ntnu.smartwork.elastic.model.PatientJson
+ * @see no.ntnu.smartwork.elastic_interface.model.PatientJson
  */
 
 @Getter

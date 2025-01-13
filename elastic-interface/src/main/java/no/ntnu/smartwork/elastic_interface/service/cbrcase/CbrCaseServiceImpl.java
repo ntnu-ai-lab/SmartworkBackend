@@ -14,7 +14,7 @@ public class CbrCaseServiceImpl implements CbrCaseService {
     private CbrCaseRepository cbrCaseDao;
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patient.PatientService#savePatients(java.util.List)
+     * @see no.ntnu.smartwork.elastic_interface.service.patient.PatientService#savePatients(java.util.List)
      */
     @Override
     public void saveCbrCases(List<CbrCase> cbrCases) {

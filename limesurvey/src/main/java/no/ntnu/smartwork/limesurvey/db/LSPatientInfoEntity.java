@@ -29,13 +29,17 @@ public class LSPatientInfoEntity {
     @Convert(converter = AttributeEncryptor.class)
     private String phone;
     private String language;
-    private Boolean called;
+    private Boolean consented;
     private String activeStatus;
     private String deactivationComment;
     @Temporal(TemporalType.TIMESTAMP)
     private Date baselineActivated;
     @Temporal(TemporalType.TIMESTAMP)
     private Date baselineCompleted;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date follwoup1Date;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date follwoup1Completed;
     @Temporal(TemporalType.TIMESTAMP)
     private Date follwoup2Date;
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,10 +48,6 @@ public class LSPatientInfoEntity {
     private Date follwoup3Date;
     @Temporal(TemporalType.TIMESTAMP)
     private Date follwoup3Completed;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date follwoup4Date;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date follwoup4Completed;
     private String PSFSAct;
     private String rctGroup = null;
 }

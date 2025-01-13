@@ -14,7 +14,7 @@ public class PatientJsonServiceImpl implements PatientJsonService {
     private PatientJsonRepository patientJsonDao;
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientJson.PatientJsonService#savePatientJson(java.util.List)
+     * @see no.ntnu.smartwork.elastic_interface.service.patientJson.PatientJsonService#savePatientJson(java.util.List)
      */
     @Override
     public PatientJson savePatientJson(PatientJson patientJson) {
@@ -23,7 +23,7 @@ public class PatientJsonServiceImpl implements PatientJsonService {
 
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientjson.PatientJsonService#savePatientJsons(java.util.List)
+     * @see no.ntnu.smartwork.elastic_interface.service.patientjson.PatientJsonService#savePatientJsons(java.util.List)
      */
     @Override
     public void savePatientJsons(List<PatientJson> patientJsons) {
@@ -31,7 +31,7 @@ public class PatientJsonServiceImpl implements PatientJsonService {
     }
 
     /* (non-Javadoc)
-     * @see no.ntnu.supportprim.elastic.service.patientjson.PatientJsonService#findAllPatientJsons()
+     * @see no.ntnu.smartwork.elastic_interface.service.patientjson.PatientJsonService#findAllPatientJsons()
      */
     @Override
     public Iterable<PatientJson> findAllPatientJsons() {
@@ -39,7 +39,7 @@ public class PatientJsonServiceImpl implements PatientJsonService {
     }
 
     // /* (non-Javadoc)
-    //  * @see no.ntnu.supportprim.elastic.service.patient.PatientService#findByBirthyearJournalidProjectid
+    //  * @see no.ntnu.smartwork.elastic_interface.service.patient.PatientService#findByBirthyearJournalidProjectid
     //  */
     // @Override
     // public List<Patient> findByBirthYearAndJournalIdAndProjectId(Integer birthYear, Integer journalId, String projectId) {
