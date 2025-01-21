@@ -31,12 +31,14 @@ spring:
   url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
   username: adm_smartwork
   password: BMhwQTcLZK6qdz.
+
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: false
     #        non spring-framework properties
     field-encryption:

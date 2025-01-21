@@ -23,7 +23,7 @@ spring:
     #password: smartwork
     #username: smartwork
     #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
-    url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
+    url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev?MODE=MYSQL
     username: adm_smartwork
     password: BMhwQTcLZK6qdz.
 
@@ -32,7 +32,8 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        #dialect: org.hibernate.dialect.H2Dialect
     show-sql: false
     field-encryption:
       password: cEW3qt63PA7RmfwTNSxvRCQ9NBcCVZpNUpVFbNf64EP9yz
@@ -61,7 +62,7 @@ limesurvey:
   # Short test survey
   survey_id: 322721 #202202 for spdev and 322721 for SW-dev  and ... for SW-RCT
   reminder_count: 2
-  reminder_interval: P3d #P2d #PT60M for testing, P3d for deployments
+  reminder_interval: PT60M #P2d #PT60M for testing, P3d for deployments
   # see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
   # for duration format.
   valid_duration_weekly: P10d #this valid duration is applied to the weekly questionnaires
@@ -83,8 +84,8 @@ limesurvey:
 
     followup1:
       type: followup1
-      #startDay: P90d  #in 3 month
-      startDay: PT15M  #in 15 min
+      #startDay: P90d  #in 3 month #Production
+      startDay: P1d  #the next day
       survey_id: ${limesurvey.survey_id}
       reminder_count: ${limesurvey.reminder_count}
       reminder_interval: ${limesurvey.reminder_interval}
@@ -93,7 +94,7 @@ limesurvey:
     followup2:
       type: followup2
       #startDay: P180d  #in 6 month
-      startDay: PT30M  #in 30 min
+      startDay: P2d  #2 days after the baseline
       survey_id: ${limesurvey.survey_id}
       reminder_count: ${limesurvey.reminder_count}
       reminder_interval: ${limesurvey.reminder_interval}
@@ -102,7 +103,7 @@ limesurvey:
     followup3:
       type: followup3
       #startDay: 210d  #in 12 month
-      startDay: PT40M  #in 40 min
+      startDay: P3d  #3 days after the baseline
       survey_id: ${limesurvey.survey_id}
       reminder_count: ${limesurvey.reminder_count}
       reminder_interval: ${limesurvey.reminder_interval}
