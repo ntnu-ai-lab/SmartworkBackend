@@ -19,16 +19,23 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 public class ElasticConfig extends ElasticsearchConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(ElasticConfig.class);
 
-    @Value("${elasticsearch.host.1}")
-    private String elasticHost1;
-    @Value("${elasticsearch.host.2}")
-    private String elasticHost2;
+    //@Value("${elasticsearch.host.1}")
+    //private String elasticHost1;
+    //@Value("${elasticsearch.host.2}")
+    //private String elasticHost2;
+
+    @Value("${ELASTIC_HOSTS}")
+    private String elasticHosts;  //  hosts read from  environment variable
+
+    @Value("${ELASTIC_PASSWORD}")
+    private String elasticPassword; // Read password from environment variable
 
     @Override
     public ClientConfiguration clientConfiguration() {
-            return ClientConfiguration.builder()
-                .connectedTo(elasticHost1, elasticHost2) // "localhost:9200", "localhost:9201"
-                .withBasicAuth("elastic", "SP2022")
+        String[] hosts = elasticHosts.split(",");
+        return ClientConfiguration.builder()
+                .connectedTo(hosts) // dynamic hosts from env variables
+                .withBasicAuth("elastic", elasticPassword)
                 .build();
     }
 

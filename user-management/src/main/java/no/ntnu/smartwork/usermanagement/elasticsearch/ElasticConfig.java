@@ -16,14 +16,18 @@ import org.elasticsearch.client.RestClient;
 @Slf4j
 public class ElasticConfig extends ElasticsearchConfiguration {
 
-    @Value("${elasticsearch.hosts}")
-    private String[] elasticHosts;
+    @Value("${ELASTIC_HOSTS}")
+    private String elasticHosts;  // Read hosts from environment variable
+
+    @Value("${ELASTIC_PASSWORD}")
+    private String elasticPassword; // Read password from environment variable
 
     @Override
     public ClientConfiguration clientConfiguration() {
+        String[] hosts = elasticHosts.split(",");
         return ClientConfiguration.builder()
-                .connectedTo(elasticHosts) // "localhost:9200", "localhost:9201"
-                .withBasicAuth("elastic", "SP2022")
+                .connectedTo(hosts) // "localhost:9200", "localhost:9201"
+                .withBasicAuth("elastic", elasticPassword)
                 .build();
     }
 }
