@@ -24,8 +24,8 @@ spring:
     #username: smartwork
     #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
     url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev?MODE=MYSQL
-    username: adm_smartwork
-    password: BMhwQTcLZK6qdz.
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
 
   jpa:
     hibernate:
@@ -36,8 +36,8 @@ spring:
         #dialect: org.hibernate.dialect.H2Dialect
     show-sql: false
     field-encryption:
-      password: cEW3qt63PA7RmfwTNSxvRCQ9NBcCVZpNUpVFbNf64EP9yz
-      salt: 919529cb234fb83e
+      password: ${JPA_PASSWORD}
+      salt: ${JPA_SALT}
 
 
 microservices:
