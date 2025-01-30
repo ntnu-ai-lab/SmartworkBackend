@@ -34,7 +34,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         #dialect: org.hibernate.dialect.H2Dialect
-    show-sql: false
+    show-sql: true
     field-encryption:
       password: ${JPA_PASSWORD}
       salt: ${JPA_SALT}
