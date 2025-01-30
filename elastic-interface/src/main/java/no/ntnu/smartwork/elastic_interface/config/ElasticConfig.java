@@ -19,11 +19,6 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 public class ElasticConfig extends ElasticsearchConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(ElasticConfig.class);
 
-    //@Value("${elasticsearch.host.1}")
-    //private String elasticHost1;
-    //@Value("${elasticsearch.host.2}")
-    //private String elasticHost2;
-
     @Value("${ELASTIC_HOSTS}")
     private String elasticHosts;  //  hosts read from  environment variable
 

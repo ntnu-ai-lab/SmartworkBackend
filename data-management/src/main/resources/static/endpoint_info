@@ -1,0 +1,128 @@
+/**
+ * REST Controller for managing patient data in the healthcare system.
+ * This controller provides endpoints for creating, retrieving, and managing patient information.
+ * All data is persisted in Elasticsearch.
+ *
+ * Available Endpoints:
+ * 1. Health Check
+ *    - GET /patient/
+ *    - Returns service health status
+ *
+ * 2. Get All Patients
+ *    - GET /patient/getAllPatients
+ *    - Retrieves all patients from the database
+ *    - Returns 204 if no patients found
+ *
+ * 3. Get Patient by ID
+ *    - GET /patient/getPatientById?patientId={id}
+ *    - Retrieves a specific patient using their ID
+ *
+ * 4. Save Patient
+ *    - POST /patient/savePatient
+ *    - Creates or updates a patient record
+ *
+ * Sample Requests:
+ *
+ * 1. Health Check:
+ * GET http://localhost:8090/patient/
+ * Response: "I am Ok!"
+ *
+ * 2. Get All Patients:
+ * GET http://localhost:8090/patient/getAllPatients
+ * Response:
+ * [
+ *   {
+ *     "id": "",
+ *     "patientId": "",
+ *     "questionnaireType": "",
+ *     "dateCreated": "",
+ *     "dateUpdated": "",
+ *     "status": "",
+ *     "similarPatients": {},
+ *     "patientDetails": {}
+ *   }
+ * ]
+ *
+ * 3. Get Patient by ID:
+ * GET http://localhost:8090/patient/getPatientById?patientId=zz675
+ * Response:
+ * {
+ *   "id": "",
+ *   "patientId": "",
+ *   "questionnaireType": "",
+ *   "dateCreated": "",
+ *   "dateUpdated": "",
+ *   "status": "",
+ *   "similarPatients": {
+ *     "patient1": {
+ *       "id": "",
+ *       "matchScore": 0.0,
+ *     }
+ *   },
+ *   "patientDetails": {
+ *     "personalInfo": {
+ *       "age": 0,
+ *       "gender": "",
+ *       "height": 0,
+ *       "weight": 0
+ *     },
+ *     "contactInfo": {
+ *       "phone": "",
+ *       "email": "",
+ *       "address": {
+ *         "street": "",
+ *         "city": "",
+ *         "postalCode": "",
+ *         "country": ""
+ *       }
+ *     }
+ *   }
+ * }
+ *
+ * 4. Save Patient:
+ * POST http://localhost:8090/patient/savePatient
+ * Request Body:
+ * {
+ *   "id": "",
+ *   "patientId": "",
+ *   "questionnaireType": "",
+ *   "dateCreated": "",
+ *   "dateUpdated": "",
+ *   "status": "",
+ *   "similarPatients": {
+ *     "patient1": {
+ *       "id": "",
+ *       "matchScore": 0.0,
+ *       "commonSymptoms": []
+ *     }
+ *   },
+ *   "patientDetails": {
+ *     "personalInfo": {
+ *       "age": 0,
+ *       "gender": "",
+ *       "bloodType": "",
+ *       "height": 0,
+ *       "weight": 0
+ *     },
+ *     "contactInfo": {
+ *       "phone": "",
+ *       "email": "",
+ *       "address": {
+ *         "street": "",
+ *         "city": "",
+ *         "postalCode": "",
+ *         "country": ""
+ *       }
+ *     }
+ *   }
+ * }
+ *
+ * Error Responses:
+ * - 400 Bad Request: Invalid input data
+ * - 404 Not Found: Patient not found
+ * - 500 Internal Server Error: Server-side error
+ *
+ * @author Anuja Vats
+ * @version 1.0
+ * @since 2025-01-30
+ */

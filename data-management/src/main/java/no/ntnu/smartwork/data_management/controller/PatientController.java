@@ -6,13 +6,17 @@ package no.ntnu.smartwork.data_management.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import no.ntnu.smartwork.data_management.model.ManualPatient;
 import no.ntnu.smartwork.data_management.model.Patient;
-import no.ntnu.smartwork.data_management.service.PatientDataService;
+import no.ntnu.smartwork.data_management.model.PatientJson;
+import no.ntnu.smartwork.data_management.service.ElasticService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.TreeMap;
 
 import static no.ntnu.smartwork.data_management.common.ApiConstant .*;
 
@@ -22,28 +26,13 @@ public class PatientController {
     private final Log log = LogFactory.getLog(getClass());
 
     @Autowired
-    private PatientDataService patientDataService;
+    private ElasticService elasticService;
 
     @GetMapping("/")
     public String health() {
         return "I am Ok!";
     }
 
-
-    @GetMapping(value = "/getPatient")
-    @Operation(
-            summary = "${PatientController.getPatient}",
-            description = "This API needs Infopad's projectId, journalId, and birthYear of a patient."
-    )
-    public Patient getPatient(
-            @RequestParam(value = JOURNAL_ID, required = true) Integer journalId,
-            @RequestParam(value = BIRTH_YEAR, required = true) Integer birthYear
-    ) throws JsonProcessingException {
-
-        log.info("Fetching the patient data");
-        Patient patient = patientDataService.getPatient(journalId, birthYear);
-        return patient;
-    }
 
     @GetMapping(value = "/getPatientById")
     @Operation(
@@ -56,7 +45,7 @@ public class PatientController {
     ) throws JsonProcessingException {
 
         log.info("Fetching the patient data");
-        Patient patient = patientDataService.getPatientById(patientId);
+        Patient patient = elasticService.getPatientByPid(patientId);
         return patient;
     }
 
@@ -68,47 +57,26 @@ public class PatientController {
 
     public Patient savePatient(@RequestBody Patient patient) throws JsonProcessingException {
 
-        log.info("Saving the patient data to DB");
-        patient = patientDataService.savePatient(patient);
+        log.info("Saving the patient Json data to DB {}");
+
+        PatientJson patientJson = new PatientJson();
+        patientJson.setPatientId(patient.getPatientId());
+        patientJson.setQuestionnaireType(patient.getQuestionnaireType());
+        // Create a TreeMap containing all the Patient details you want to store
+        TreeMap patientDetails = new TreeMap();
+        patientDetails.put("id", patient.getId());
+        patientDetails.put("status", patient.getStatus());
+        patientDetails.put("dateUpdated", patient.getDateUpdated());
+        patientDetails.put("similarPatients", patient.getSimilarPatients());
+        patientDetails.put("patientDetails", patient.getPatientDetails());
+        patientJson.setPatientJson(patientDetails);
+
+        // Save PatientJson
+        PatientJson savedPatientJson = elasticService.savePatientJsonToDb(patientJson);
+
         return patient;
     }
 
     //----------------------------------------------------------------------------------------------------------
 
-    // Temporary method to get patient data directly form Elasticsearch
-    @GetMapping(value = "/getManualPatientById")
-    @Operation(summary = "${PatientController.getManualPatientById}",//
-            description = "This API needs a patientId."
-    )
-    public String getManualPatientById(
-            @RequestParam(value = PATIENT_ID, required = true) String patientId
-    ) throws JsonProcessingException {
-
-        log.info("Fetching the patient data");
-        String patient = patientDataService.getManualPatientById(patientId);
-        return patient;
-    }
-
-    // Temporary method to save patient data directly to Elasticsearch
-    @PostMapping(value= "/saveManualPatient")
-    @Operation(summary = "${PatientController.saveManualPatient}",//
-            description = "This API needs a ManualPatient json."
-    )
-    public ManualPatient saveManualPatient(@RequestBody ManualPatient manualPatient) throws JsonProcessingException {
-
-        log.info("Saving the patient data to DB");
-        manualPatient = patientDataService.saveManualPatient(manualPatient);
-        return manualPatient;
-    }
-
-    @GetMapping(value = "/fetchAllPatients")
-    @Operation(summary = "${PatientController.fetchAllPatients}")
-    public String fetchAllPatients(
-            @RequestParam(value = PROJECT_ID, required = true) Integer projectId
-    ) throws JsonProcessingException {
-
-        log.info("Fetching the patient data");
-        String patient = patientDataService.getAllPatients(projectId);
-        return patient;
-    }
 }

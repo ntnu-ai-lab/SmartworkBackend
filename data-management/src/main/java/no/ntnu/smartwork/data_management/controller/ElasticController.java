@@ -25,19 +25,5 @@ public class ElasticController {
         return "I am Ok!";
     }
 
-/*    @RequestMapping("/getPatient")
-    @ApiOperation(value = "${PatientController.getPatient}",//
-            notes = "This API needs Infopad's projectId, journalId, and birthYear of a patient."
-    )
-    public String getPatientForm(
-            @RequestParam(value = PROJECT_ID, required = true) String projectId,
-            @RequestParam(value = JOURNAL_ID, required = true) String journalId,
-            @RequestParam(value = BIRTH_YEAR, required = true) String birthYear
-    ) throws JsonProcessingException {
-
-        log.info("Fetching the patient data");
-        String patient = patientDataImportService.getPatient(clinicId, clinicPassword, projectId, journalId, birthYear);
-        return patient;
-    }*/
 }
 

@@ -2,6 +2,9 @@
   #   comma separated
 #  hosts: localhost:9200, localhost:9201
 
+ELASTIC_HOSTS: ${ELASTIC_HOSTS}
+ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+
 eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
@@ -23,17 +26,12 @@ spring:
     elasticsearch:
       node:
         name: elasticsearch
+
   #   patients database
   datasource:
-    #password: smartwork
-    #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
-    #username: smartwork
-  url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
-  username: ${MYSQL_USERNAME}
-  password: ${MYSQL_PASSWORD}
-
-
-
+    url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
 
   jpa:
     hibernate:

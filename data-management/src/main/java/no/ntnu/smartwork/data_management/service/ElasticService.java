@@ -18,10 +18,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.validation.constraints.NotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static no.ntnu.smartwork.data_management.common.ApiConstant .*;
 
 @Service
@@ -104,6 +110,31 @@ public class ElasticService {
         return patient;
     }
 
+    public List<Patient> getAllPatients() throws JsonProcessingException {
+        log.info("Getting all patients from the database");
+        List<Patient> patients = new ArrayList<>();
+
+        try {
+            String requestUrl = elasticGetPatientBaseUrl + "/all";  // Adjust URL based on your Elasticsearch endpoint
+            log.info("Elastic-Service complete URL: " + requestUrl);
+
+            // Get response as array of patients
+            ResponseEntity<Patient[]> response = restTemplate.getForEntity(
+                    requestUrl,
+                    Patient[].class
+            );
+
+            if (response.getBody() != null) {
+                patients = Arrays.asList(response.getBody());
+            }
+
+            log.debug("Retrieved " + patients.size() + " patients from elastic-service");
+        } catch (Exception ex) {
+            log.error("Error retrieving all patients: ", ex);
+            throw new RuntimeException("Failed to retrieve patients", ex);
+        }
+        return patients;
+    }
 
     //------------------------------------------------------------------------------------
 

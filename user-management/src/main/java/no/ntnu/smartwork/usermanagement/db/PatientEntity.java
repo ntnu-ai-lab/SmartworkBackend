@@ -11,7 +11,7 @@ import jakarta.persistence.*;
 @Table(name = "Patient")
 @Getter
 @Setter
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientEntity {
