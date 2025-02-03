@@ -36,6 +36,13 @@ import com.google.gson.JsonParser;
 @Service
 @Slf4j
 public class LimesurveyService {
+
+    @Value("${LIMESURVEY_USERNAME}")
+    private String username;
+
+    @Value("${LIMESURVEY_PASSWORD}")
+    private String password;
+
     @Autowired
     private QuestionnaireSettings questionnaireSettings;
 
@@ -124,7 +131,7 @@ public class LimesurveyService {
     public String getSessionKey() throws Exception {
         if (Instant.now().isAfter(keyExpireDate)) {
 //			sessionKey = connectToLimeSurvey();
-            HttpResponse response = postLime("get_session_key", "admin", "test");
+            HttpResponse response = postLime("get_session_key", username, password);
             sessionKey = null;
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 sessionKey = getEntityJson(response).get(FIELD_RESULT).asText();
