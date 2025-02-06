@@ -68,10 +68,9 @@ public class LimesurveyController {
         try {
             // Preprocess the raw payload to fix common issues
             String sanitizedPayload = rawPayload
-                    .replace("'", "\"")  // Replace single quotes with double quotes
-                    .replace("None", "null");  // Replace Python's None with JSON null
+                    .replace("'", "\"")
+                    .replace("None", "null");
 
-            // Deserialize to CompletedQuestionnaireBean
             ObjectMapper objectMapper = new ObjectMapper();
             CompletedQuestionnaireBean questionnaire = objectMapper.readValue(sanitizedPayload, CompletedQuestionnaireBean.class);
 

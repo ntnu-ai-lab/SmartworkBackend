@@ -43,6 +43,9 @@ microservices:
       savePatientJson: http://elastic-interface/patientJsons/savePatientJson
 
 limesurvey:
+  username: ${LIMESURVEY_USERNAME}
+  password: ${LIMESURVEY_PASSWORD}
+
   rpc_url: https://limesurvey.idi.ntnu.no/index.php/admin/remotecontrol
   #Schedule to run questionnaire service and activate pending questionnaire.
   #	every 5 seconds (for testing)

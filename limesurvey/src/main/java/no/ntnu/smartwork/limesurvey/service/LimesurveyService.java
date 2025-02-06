@@ -13,6 +13,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.springframework.beans.factory.annotation.Value;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -37,10 +38,10 @@ import com.google.gson.JsonParser;
 @Slf4j
 public class LimesurveyService {
 
-    @Value("${LIMESURVEY_USERNAME}")
+    @Value("${limesurvey.username}")
     private String username;
 
-    @Value("${LIMESURVEY_PASSWORD}")
+    @Value("${limesurvey.password}")
     private String password;
 
     @Autowired
