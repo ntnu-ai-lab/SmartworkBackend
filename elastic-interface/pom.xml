@@ -88,6 +88,7 @@
 	</dependencyManagement>
 
 	<build>
+		<directory>/your/custom/path/</directory>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
