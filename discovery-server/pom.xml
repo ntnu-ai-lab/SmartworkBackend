@@ -42,7 +42,7 @@
 	</dependencyManagement>
 
 	<build>
-		<directory>/your/custom/path/</directory>
+		<directory>../jars</directory>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
