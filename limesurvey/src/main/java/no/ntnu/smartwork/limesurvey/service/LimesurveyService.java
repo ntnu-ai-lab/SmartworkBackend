@@ -93,10 +93,14 @@ public class LimesurveyService {
         map.put("id", 1);
         map.put("params", params);
         final String json = new ObjectMapper().writeValueAsString(map);
+        log.debug("Sending LimeSurvey RPC request: {}", json);
         //System.out.println(json);
 //		logger.error(json);
         post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
-        return httpClient.execute(post);
+        HttpResponse response = httpClient.execute(post);
+        log.debug("LimeSurvey response status: {}", response.getStatusLine());
+
+        return response;
     }
 
     /**

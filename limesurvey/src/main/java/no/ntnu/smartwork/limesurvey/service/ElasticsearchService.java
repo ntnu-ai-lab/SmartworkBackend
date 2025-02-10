@@ -49,6 +49,20 @@ public class ElasticsearchService {
     @Value("${elastic.save.patient.base.url}")
     private String elasticSavePatientBaseUrl;
 
+    @Value("${ADD_USER_URL}")
+    private String addUserUrl;
+
+    @Value("${FOLLOWUP_URL}")
+    private String followupUrl;
+
+    @Value("${APP_CLIENT_ID}")
+    private String clientId;
+
+    @Value("${APP_CLIENT_SECRET}")
+    private String clientSecret;
+
+    @Value("${APP_API_TOKEN_URI}")
+    private String tokenUri;
 
     /**
      * Here we have a control on what will be saved to Elasticsearch
@@ -63,11 +77,12 @@ public class ElasticsearchService {
             if (patientOpt.isEmpty() || lsPatientInfoOpt.isEmpty()) {
                 throw new IllegalArgumentException("Patient or patient info not found for ID: " + patientId);
             }
-
+            log.info("Patient ID: " + patientId);
+            log.info("questionaire type: " + questionnaireType);
+            log.info("answers : " + answers);
             // Add answers to the map
             map.put("questionnaireType", questionnaireType);
             answers.forEach(map::put);
-
             // Remove unnecessary keys
             String[] keysToRemove = {
                     "id", "lastpage", "refurl", "seed", "datestamp",
@@ -87,23 +102,19 @@ public class ElasticsearchService {
 
             // Determine target URL
             String targetUrl = null;
-            if ("baseline".equalsIgnoreCase(questionnaireType)) {
-                targetUrl = System.getenv("ADD_USER_URL"); // "https://back-up.idi.ntnu.no/admin/adduser";
+            if (questionnaireType.toLowerCase().contains("baseline")) {
+                targetUrl = addUserUrl; // "https://back-up.idi.ntnu.no/admin/adduser";
             } else if (questionnaireType.toLowerCase().contains("followup")) {
-                targetUrl = System.getenv("FOLLOWUP_URL");  // "https://back-up.idi.ntnu.no/admin/followup";
+                targetUrl = followupUrl;  // "https://back-up.idi.ntnu.no/admin/followup";
             }
 
             if (targetUrl != null) {
                 // Request OAuth token
-                String clientId = System.getenv("APP_CLIENT_ID");
-                String clientSecret = System.getenv("APP_CLIENT_SECRET");
-                String tokenUri = System.getenv("APP_API_TOKEN_URI");
                 Map<String, String> formData = Map.of(
                         "client_id", clientId,
                         "client_secret", clientSecret
                 );
                 String encodedData = encodeFormData(formData);
-
                 HttpRequest tokenRequest = HttpRequest.newBuilder()
                         .uri(new URI(tokenUri))
                         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -113,7 +124,8 @@ public class ElasticsearchService {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpResponse<String> tokenResponse = client.send(tokenRequest, HttpResponse.BodyHandlers.ofString());
 
-                log.info("Token Response: {}", tokenResponse.body());
+                log.info("API Token Response: {}", tokenResponse.body());
+                //log.info("Map is: {}", map.toString());
 
                 String accessToken = parseAccessToken(tokenResponse.body());
 
@@ -125,8 +137,8 @@ public class ElasticsearchService {
                 payload.put("questionnaire",map);
 
                 String jsonPayload = convertToJson(payload);
-                //log.info("...payload is > {}",payload);
-                //log.info("...JSON payload is > {}",payload);
+                log.info("...payload is > {}",payload);
+                log.info("...JSON payload is > {}",payload);
 
                 HttpRequest dataRequest = HttpRequest.newBuilder()
                         .uri(new URI(targetUrl))
@@ -140,6 +152,7 @@ public class ElasticsearchService {
             }
 
             // Send to Elasticsearch
+            log.info("..........Sending to ES after sending to API.................. ");
             restTemplate.postForObject(elasticSavePatientBaseUrl, ESrequest, PatientJson.class);
 
         } catch (URISyntaxException e) {

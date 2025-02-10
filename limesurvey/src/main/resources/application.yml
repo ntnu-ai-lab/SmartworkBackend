@@ -11,6 +11,14 @@ eureka:
 
 server.port: 8014
 
+ADD_USER_URL: ${ADD_USER_URL}
+FOLLOWUP_URL: ${FOLLOWUP_URL}
+
+# OAuth Configuration
+APP_CLIENT_ID: ${APP_CLIENT_ID}
+APP_CLIENT_SECRET: ${APP_CLIENT_SECRET}
+APP_API_TOKEN_URI: ${APP_API_TOKEN_URI}
+
 spring:
   application:
     name: limesurvey-service

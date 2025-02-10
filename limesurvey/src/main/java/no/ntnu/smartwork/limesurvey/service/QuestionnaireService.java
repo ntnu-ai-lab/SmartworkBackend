@@ -196,10 +196,31 @@ public class QuestionnaireService {
      * Invokes sending a reminder irrespective of how many and when reminders were sent before.
      */
     public void sendReminder(String tokenID, String surveyId) throws Exception {
-        log.info("RPC call to Remind participant"+ tokenID);
-        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, null, null, Collections.singletonList(tokenID));
-        if (!result.has(tokenID))
+        log.info("RPC call to Remind participant for token: {} and survey: {}", tokenID, surveyId);
+
+        List<String> tokens = Collections.singletonList(tokenID);
+
+        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, tokens);
+        JsonNode statusNode = result.path("status");
+        if (statusNode.asText().contains("left to send")) {
+            // This means reminders were sent successfully
+            log.info("Reminder sent successfully. Status: {}", statusNode.asText());
+            return;
+        }
+
+        // If we get here, check for errors
+        if (result.has("error") && !result.get("error").isNull()) {
+            throw new IllegalStateException("Error sending reminder: " + result.get("error").asText());
+        }
+
+        // Log the full response for debugging
+        log.warn("Unexpected response format: {}", result.toString());
+        throw new IllegalStateException("Unexpected response format from LimeSurvey");
+        /*if (!result.has(tokenID))
+        {
+            log.error("Reminder failed. Full response: {}", result.toString());
             throw new IllegalStateException(result.get(FIELD_STATUS).asText());
+        }*/
     }
 
     /**
