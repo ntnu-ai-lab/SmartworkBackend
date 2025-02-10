@@ -36,7 +36,8 @@ public class DashboardController {
      *
      */
     @PostMapping(value = "activateLSInfo")
-    public void activatePatientLSInfo(@Valid @RequestBody NewPatient newPatient) throws Exception {
+    public void
+    activatePatientLSInfo(@Valid @RequestBody NewPatient newPatient) throws Exception {
         log.debug("Activating LSInfo record for patient {}", newPatient.getPatientId());
         patientInfoRepository.save(LSPatientInfoEntity.builder()
                 .patientId(newPatient.getPatientId())

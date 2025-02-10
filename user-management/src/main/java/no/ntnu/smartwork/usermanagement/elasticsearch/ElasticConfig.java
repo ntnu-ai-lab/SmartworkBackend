@@ -26,7 +26,7 @@ public class ElasticConfig extends ElasticsearchConfiguration {
     public ClientConfiguration clientConfiguration() {
         String[] hosts = elasticHosts.split(",");
         return ClientConfiguration.builder()
-                .connectedTo(hosts) // "localhost:9200", "localhost:9201"
+                .connectedTo(hosts) //
                 .withBasicAuth("elastic", elasticPassword)
                 .build();
     }

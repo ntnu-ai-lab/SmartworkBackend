@@ -2,7 +2,10 @@ package no.ntnu.smartwork.limesurvey.controller;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,16 +19,28 @@ import no.ntnu.smartwork.limesurvey.db.LSPatientInfoEntity;
 import no.ntnu.smartwork.limesurvey.db.LSPatientInfoRepository;
 import no.ntnu.smartwork.limesurvey.service.QuestionnaireService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.core.JsonParseException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Provides registration of new patients.
@@ -48,40 +63,87 @@ public class LimesurveyController {
      * </ul>
      *
      */
-   // @PostMapping(value = "activate")
- //   public void activatePatient(@Valid @RequestBody NewPatient newPatient) throws Exception {
- //       log.debug("Activating patient {}", newPatient.getPatientId());
-  //      questionnaireService.activateBaseline(newPatient);
-  //  }
+    // @PostMapping(value = "activate")
+    //   public void activatePatient(@Valid @RequestBody NewPatient newPatient) throws Exception {
+    //       log.debug("Activating patient {}", newPatient.getPatientId());
+    //      questionnaireService.activateBaseline(newPatient);
+    //  }
 
 
     /**
      * Add questionnaire answers to the ES.
-*/
+     */
+
     @Operation(summary = "Post questionnaire",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-
-    @PostMapping(value = "questionnaire", produces = "text/plain", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody
-    String postQuestionnaire(@RequestBody String rawPayload) {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class)
+                            )
+                    )
+            })
+    @PostMapping(
+            value = "questionnaire",
+            produces = MediaType.TEXT_PLAIN_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody String postQuestionnaire(@RequestBody String rawPayload) {
         try {
             // Preprocess the raw payload to fix common issues
             String sanitizedPayload = rawPayload
                     .replace("'", "\"")
                     .replace("None", "null");
 
+            // Log the sanitized payload for debugging
+            log.debug("Sanitized payload: {}", sanitizedPayload);
+
             ObjectMapper objectMapper = new ObjectMapper();
-            CompletedQuestionnaireBean questionnaire = objectMapper.readValue(sanitizedPayload, CompletedQuestionnaireBean.class);
+
+            // First try to parse as JsonNode to validate JSON structure
+            JsonNode jsonNode = objectMapper.readTree(sanitizedPayload);
+            log.debug("JSON structure valid, attempting to map to object");
+
+            // Map to questionnaire object
+            CompletedQuestionnaireBean questionnaire = objectMapper.readValue(
+                    sanitizedPayload,
+                    CompletedQuestionnaireBean.class
+            );
 
             // Process the questionnaire
-            questionnaireService.addQuestionnaire(questionnaire.getTid(), questionnaire.getType(), questionnaire.getQuestionnaire());
-            log.info("Save Questionnaire function, Posts this map elastic interface url..." + questionnaire.getQuestionnaire());
+            questionnaireService.addQuestionnaire(
+                    questionnaire.getTid(),
+                    questionnaire.getType(),
+                    questionnaire.getQuestionnaire()
+            );
+
+            log.info("Successfully saved questionnaire with tid: {}", questionnaire.getTid());
+            return "OK";
+
+        } catch (JsonProcessingException e) {
+            log.error("JSON parsing error: {}", e.getMessage());
+            log.error("Error location: {}",
+                    e.getLocation() != null ?
+                            String.format("line %d, column %d",
+                                    e.getLocation().getLineNr(),
+                                    e.getLocation().getColumnNr()) :
+                            "unknown"
+            );
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid JSON format: " + e.getMessage(),
+                    e
+            );
         } catch (Exception e) {
             log.error("Failed to process questionnaire payload", e);
-            return "Error processing payload";
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error processing payload",
+                    e
+            );
         }
-        return "OK";
     }
    /*
     @PostMapping(value = "questionnaire", produces = "text/plain", consumes = MediaType.APPLICATION_JSON_VALUE)

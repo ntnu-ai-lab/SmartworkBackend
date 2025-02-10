@@ -20,6 +20,10 @@ spring:
         name: elasticsearch
   #   patients database
   datasource:
+    #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
+    #password: smartwork
+    #username: smartwork
+
     url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}

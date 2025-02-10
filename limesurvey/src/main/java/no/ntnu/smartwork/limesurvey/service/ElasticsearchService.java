@@ -88,15 +88,16 @@ public class ElasticsearchService {
             // Determine target URL
             String targetUrl = null;
             if ("baseline".equalsIgnoreCase(questionnaireType)) {
-                targetUrl = "https://back-up.idi.ntnu.no/admin/adduser";
+                targetUrl = System.getenv("ADD_USER_URL"); // "https://back-up.idi.ntnu.no/admin/adduser";
             } else if (questionnaireType.toLowerCase().contains("followup")) {
-                targetUrl = "https://back-up.idi.ntnu.no/admin/followup";
+                targetUrl = System.getenv("FOLLOWUP_URL");  // "https://back-up.idi.ntnu.no/admin/followup";
             }
 
             if (targetUrl != null) {
                 // Request OAuth token
-                String clientId = "limesurvey_api";
-                String clientSecret = "19f7d1015aabc4e0bb63bf754dc43c275195b2f46397f9d70165aab43e0c70dd";
+                String clientId = System.getenv("LIMESURVEY_CLIENT_ID");
+                String clientSecret = System.getenv("LIMESURVEY_CLIENT_SECRET");
+                String tokenUri = System.getenv("LIMESURVEY_TOKEN_URI");
                 Map<String, String> formData = Map.of(
                         "client_id", clientId,
                         "client_secret", clientSecret
@@ -104,7 +105,7 @@ public class ElasticsearchService {
                 String encodedData = encodeFormData(formData);
 
                 HttpRequest tokenRequest = HttpRequest.newBuilder()
-                        .uri(new URI("https://back-up.idi.ntnu.no/oauth/token"))
+                        .uri(new URI(tokenUri))
                         .header("Content-Type", "application/x-www-form-urlencoded")
                         .POST(HttpRequest.BodyPublishers.ofString(encodedData))
                         .build();
