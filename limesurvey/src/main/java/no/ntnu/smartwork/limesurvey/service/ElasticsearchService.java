@@ -95,9 +95,9 @@ public class ElasticsearchService {
 
             if (targetUrl != null) {
                 // Request OAuth token
-                String clientId = System.getenv("LIMESURVEY_CLIENT_ID");
-                String clientSecret = System.getenv("LIMESURVEY_CLIENT_SECRET");
-                String tokenUri = System.getenv("LIMESURVEY_TOKEN_URI");
+                String clientId = System.getenv("APP_CLIENT_ID");
+                String clientSecret = System.getenv("APP_CLIENT_SECRET");
+                String tokenUri = System.getenv("APP_API_TOKEN_URI");
                 Map<String, String> formData = Map.of(
                         "client_id", clientId,
                         "client_secret", clientSecret
