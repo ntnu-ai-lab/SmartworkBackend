@@ -96,7 +96,7 @@ limesurvey:
 
     followup1:
       type: followup1
-      #startDay: P90d  #in 3 month #Production
+      #startDay: PT10m  #in 3 month #Production
       startDay: P1d  #the next day
       survey_id: ${limesurvey.survey_id}
       reminder_count: ${limesurvey.reminder_count}

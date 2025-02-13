@@ -8,7 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
       </profile>
-      <profile name="Annotation profile for user-management" enabled="true">
+      <profile name="Annotation profile for discovery-server" enabled="true">
         <sourceOutputDir name="../jars/generated-sources/annotations" />
         <sourceTestOutputDir name="../jars/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />

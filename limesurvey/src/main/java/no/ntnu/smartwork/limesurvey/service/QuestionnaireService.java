@@ -198,29 +198,86 @@ public class QuestionnaireService {
     public void sendReminder(String tokenID, String surveyId) throws Exception {
         log.info("RPC call to Remind participant for token: {} and survey: {}", tokenID, surveyId);
 
-        List<String> tokens = Collections.singletonList(tokenID);
+        // 1. Get questionnaire from database
+        Optional<LSQuestionnaireEntity> questionnaire = questionnaireRepository.findById(tokenID);
+        if (!questionnaire.isPresent()) {
+            log.error("Token {} not found in local database", tokenID);
+            throw new IllegalStateException("Token not found in database");
+        }
 
-        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, tokens);
-        JsonNode statusNode = result.path("status");
-        if (statusNode.asText().contains("left to send")) {
-            // This means reminders were sent successfully
-            log.info("Reminder sent successfully. Status: {}", statusNode.asText());
+        LSQuestionnaireEntity q = questionnaire.get();
+
+        // 2. Get the config for this questionnaire type
+        QuestionnaireConfig config = questionnaireSettings.getQuestionnaires().get(q.getType());
+        if (config == null) {
+            log.error("No configuration found for questionnaire type: {}", q.getType());
+            throw new IllegalStateException("Invalid questionnaire type");
+        }
+
+        // 3. Check reminders left in our database
+        if (q.getRemindersLeft() <= 0) {
+            log.warn("No reminders left for token {}. Set maximum is {}",
+                    tokenID, config.getReminderCount());
             return;
         }
 
-        // If we get here, check for errors
-        if (result.has("error") && !result.get("error").isNull()) {
-            throw new IllegalStateException("Error sending reminder: " + result.get("error").asText());
+        // 4. Check reminder interval
+        if (q.getLastReminder() != null) {
+            Instant nextReminderTime = q.getLastReminder().toInstant()
+                    .plus(config.getReminderInterval());
+            if (Instant.now().isBefore(nextReminderTime)) {
+                log.warn("Too soon to send reminder. Next reminder allowed at: {}", nextReminderTime);
+                return;
+            }
         }
 
-        // Log the full response for debugging
-        log.warn("Unexpected response format: {}", result.toString());
+        // 5. Check if the questionnaire is still valid
+        if (Instant.now().isAfter(q.getValidUntil().toInstant())) {
+            log.warn("Questionnaire has expired. Valid until: {}", q.getValidUntil());
+            return;
+        }
+
+        // 6. Now try to send the reminder
+        List<String> tokens = Collections.singletonList(tokenID);
+        log.info("Calling LimeSurvey API with tokens: {}", tokens);
+
+        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, tokens);
+        log.info("Raw LimeSurvey response: {}", result.toString());
+
+        // 7. Process the response
+        JsonNode statusNode = result.path("status");
+        if (!statusNode.isMissingNode()) {
+            String status = statusNode.asText();
+            if (status.contains("left to send")) {
+                // Success - update the reminder count and last reminder time
+                LSQuestionnaireEntity updated = q.toBuilder()
+                        .remindersLeft(q.getRemindersLeft() - 1)
+                        .lastReminder(Date.from(Instant.now()))
+                        .build();
+                questionnaireRepository.save(updated);
+                log.info("Reminder sent successfully and database updated");
+                return;
+            }
+
+            if (status.contains("No candidate tokens")) {
+                log.warn("LimeSurvey reports no candidate tokens. Checking token status...");
+                JsonNode tokenStatus = limeSurveyService.call("get_participant_properties", surveyId, tokenID);
+                log.info("Token properties in LimeSurvey: {}", tokenStatus);
+
+                // Check if completed in LimeSurvey but not in our DB
+                if (tokenStatus.has("completed") && "Y".equals(tokenStatus.get("completed").asText())
+                        && q.getCompletedDate() == null) {
+                    log.info("Updating completed status in database");
+                    LSQuestionnaireEntity updated = q.toBuilder()
+                            .completedDate(new Date())
+                            .build();
+                    questionnaireRepository.save(updated);
+                }
+                return;
+            }
+        }
+
         throw new IllegalStateException("Unexpected response format from LimeSurvey");
-        /*if (!result.has(tokenID))
-        {
-            log.error("Reminder failed. Full response: {}", result.toString());
-            throw new IllegalStateException(result.get(FIELD_STATUS).asText());
-        }*/
     }
 
     /**
@@ -304,8 +361,14 @@ public class QuestionnaireService {
 
     @Scheduled(cron = "${limesurvey.cron}")
     public void onSchedule() throws Exception {
+        log.info("Starting onSchedule execution");
 
         for (final QuestionnaireConfig config : questionnaireSettings.getQuestionnaires().values()) {
+            log.info("Processing questionnaire config: isBaseline={}, type={}, startDay={}, validDuration={}",
+                    config.isBaseline(),
+                    config.getType(),
+                    config.getStartDay(),
+                    config.getValidDuration());
             if (!config.isBaseline()) {
 //				baselineCompleted + startDay <= now <=baselineCompleted + startDay + validDuration
 //				thus:
@@ -319,22 +382,45 @@ public class QuestionnaireService {
                         .minus(config.getValidDuration());
                 final Instant to = Instant.now()
                         .minus(config.getStartDay());
+                final Instant now = Instant.now();
+                log.info("Searching for baselines in time window: from={}, to={}, current time={}",
+                        from, to, now);
 //				First, find the patients (via baseline records) that have followup questionnaires due
                 final List<LSQuestionnaireEntity> baselines =
                         //log.info("found baselines n= {}, dates: from {} to {}", baselines.size(), startDate, endDate);
                          questionnaireRepository.findAllByCompletedDateBetween(Date.from(from), Date.from(to));
                 log.info("found baselines n= {}, dates: from {} to {}, value {}", baselines.size(), from, to, baselines);
+                baselines.forEach(baseline -> {
+                    log.info("Baseline: patientId={}, completedDate={}, tokenId={}",
+                            baseline.getPatientId(),
+                            baseline.getCompletedDate(),
+                            baseline.getTokenId());
+                });
+
                 for (final LSQuestionnaireEntity baseline : baselines) {
                     final String patientId = baseline.getPatientId();
                     log.info("baseline completion date fetch : {})", baseline.getCompletedDate());
+                    log.info("Processing baseline for patient={}, checking for followup type={}",
+                            patientId, config.getType());
 //					Check if there is no active followup questionnaire
                     final Optional<LSQuestionnaireEntity> followupOpt = questionnaireRepository.findByPatientIdAndType(patientId, config.getType());
-                    log.info("Checking followup type in repo: {}", followupOpt);
+                    //log.info("Checking followup type in repo: {}", followupOpt);
+                    followupOpt.ifPresent(entity ->
+                            log.info("Checking followup type in repo - Patient ID: {}, Type: {}, Entity Details: {}",
+                                    patientId,
+                                    config.getType(),
+                                    entity)  // This will use toString() of your entity
+                    );
                     if (!followupOpt.isPresent()) {
                         final String tokenId = activateFollowup(patientId, config.getType());
                         log.info("If found, Activated a followup questionnaire for the user {} with token ID = {}", patientId, tokenId);
                     } else {
                         final LSQuestionnaireEntity followup = followupOpt.get();
+                        log.info("Existing followup found: completedDate={}, remindersLeft={}, lastReminder={}",
+                                followup.getCompletedDate(),
+                                followup.getRemindersLeft(),
+                                followup.getLastReminder());
+
                         if (followup.getCompletedDate() == null
                                 && followup.getRemindersLeft() > 0
                                 && Instant.now().isAfter(
