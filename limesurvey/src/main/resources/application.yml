@@ -72,7 +72,7 @@ limesurvey:
   #   common settings, optional, just to make
   #    survey_id:438751
   # Short test survey
-  survey_id: 322721 #202202 for spdev and 322721 for SW-dev  and ... for SW-RCT
+  survey_id: 322800 #202202 for spdev and 322721 for SW-dev  and ... for SW-RCT
   reminder_count: 2
   reminder_interval: PT60M #P2d #PT60M for testing, P3d for deployments
   # see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
