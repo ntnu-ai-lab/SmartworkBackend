@@ -148,17 +148,17 @@ public class QuestionnaireService {
         //Update response in LsPatientInfoEntity Table
         final LSPatientInfoEntity lsPatientInfo = patientInfoRepository.findByPatientId(patient.getPatientId());
         final LSPatientInfoEntity updatedlsPatientInfo = lsPatientInfo.toBuilder()
-                                                        .consented(true)
-                                                        .activeStatus("active")
-                                                        .baselineActivated(Date.from(Instant.now()))
-                                                        .follwoup1Date(followup1StartDay)
-                                                        .follwoup2Date(followup2StartDay)
-                                                        .follwoup3Date(followup3StartDay).build();
+                .consented(true)
+                .activeStatus("active")
+                .baselineActivated(Date.from(Instant.now()))
+                .follwoup1Date(followup1StartDay)
+                .follwoup2Date(followup2StartDay)
+                .follwoup3Date(followup3StartDay).build();
         patientInfoRepository.save(updatedlsPatientInfo);
 
 
 
-                // Prepare response map with dates
+        // Prepare response map with dates
         Map<String, Object> response = new HashMap<>();
         response.put("BaseLineDate", validUntil.toInstant());
         response.put("Followup1Date", followup1StartDay.toInstant());
@@ -170,17 +170,17 @@ public class QuestionnaireService {
         //TODO : Check record in LS-info, and create a flag when baseline is triggered through dashboard.
 
         // patientInfoRepository.save(LSPatientInfoEntity.builder()
-          //      .patientId(patient.getPatientId())
-            //    .navId(patient.getNavId())
-              //  .firstname(patient.getFirstname())
-         //       .lastname(patient.getLastname())
-           //     .email(patient.getEmail())
-            //    .phone(patient.getPhone())
-            //    .language(patient.getLanguage())
-             //   .build());
+        //      .patientId(patient.getPatientId())
+        //    .navId(patient.getNavId())
+        //  .firstname(patient.getFirstname())
+        //       .lastname(patient.getLastname())
+        //     .email(patient.getEmail())
+        //    .phone(patient.getPhone())
+        //    .language(patient.getLanguage())
+        //   .build());
 
 
-      //  return tid;
+        //  return tid;
 
     }
 
@@ -196,88 +196,9 @@ public class QuestionnaireService {
      * Invokes sending a reminder irrespective of how many and when reminders were sent before.
      */
     public void sendReminder(String tokenID, String surveyId) throws Exception {
-        log.info("RPC call to Remind participant for token: {} and survey: {}", tokenID, surveyId);
-
-        // 1. Get questionnaire from database
-        Optional<LSQuestionnaireEntity> questionnaire = questionnaireRepository.findById(tokenID);
-        if (!questionnaire.isPresent()) {
-            log.error("Token {} not found in local database", tokenID);
-            throw new IllegalStateException("Token not found in database");
-        }
-
-        LSQuestionnaireEntity q = questionnaire.get();
-
-        // 2. Get the config for this questionnaire type
-        QuestionnaireConfig config = questionnaireSettings.getQuestionnaires().get(q.getType());
-        if (config == null) {
-            log.error("No configuration found for questionnaire type: {}", q.getType());
-            throw new IllegalStateException("Invalid questionnaire type");
-        }
-
-        // 3. Check reminders left in our database
-        if (q.getRemindersLeft() <= 0) {
-            log.warn("No reminders left for token {}. Set maximum is {}",
-                    tokenID, config.getReminderCount());
-            return;
-        }
-
-        // 4. Check reminder interval
-        if (q.getLastReminder() != null) {
-            Instant nextReminderTime = q.getLastReminder().toInstant()
-                    .plus(config.getReminderInterval());
-            if (Instant.now().isBefore(nextReminderTime)) {
-                log.warn("Too soon to send reminder. Next reminder allowed at: {}", nextReminderTime);
-                return;
-            }
-        }
-
-        // 5. Check if the questionnaire is still valid
-        if (Instant.now().isAfter(q.getValidUntil().toInstant())) {
-            log.warn("Questionnaire has expired. Valid until: {}", q.getValidUntil());
-            return;
-        }
-
-        // 6. Now try to send the reminder
-        List<String> tokens = Collections.singletonList(tokenID);
-        log.info("Calling LimeSurvey API with tokens: {}", tokens);
-
-        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, tokens);
-        log.info("Raw LimeSurvey response: {}", result.toString());
-
-        // 7. Process the response
-        JsonNode statusNode = result.path("status");
-        if (!statusNode.isMissingNode()) {
-            String status = statusNode.asText();
-            if (status.contains("left to send")) {
-                // Success - update the reminder count and last reminder time
-                LSQuestionnaireEntity updated = q.toBuilder()
-                        .remindersLeft(q.getRemindersLeft() - 1)
-                        .lastReminder(Date.from(Instant.now()))
-                        .build();
-                questionnaireRepository.save(updated);
-                log.info("Reminder sent successfully and database updated");
-                return;
-            }
-
-            if (status.contains("No candidate tokens")) {
-                log.warn("LimeSurvey reports no candidate tokens. Checking token status...");
-                JsonNode tokenStatus = limeSurveyService.call("get_participant_properties", surveyId, tokenID);
-                log.info("Token properties in LimeSurvey: {}", tokenStatus);
-
-                // Check if completed in LimeSurvey but not in our DB
-                if (tokenStatus.has("completed") && "Y".equals(tokenStatus.get("completed").asText())
-                        && q.getCompletedDate() == null) {
-                    log.info("Updating completed status in database");
-                    LSQuestionnaireEntity updated = q.toBuilder()
-                            .completedDate(new Date())
-                            .build();
-                    questionnaireRepository.save(updated);
-                }
-                return;
-            }
-        }
-
-        throw new IllegalStateException("Unexpected response format from LimeSurvey");
+        final JsonNode result = limeSurveyService.call("remind_participants", surveyId, null, null, Collections.singletonList(tokenID));
+        if (!result.has(tokenID))
+            throw new IllegalStateException(result.get(FIELD_STATUS).asText());
     }
 
     /**
@@ -363,12 +284,7 @@ public class QuestionnaireService {
     public void onSchedule() throws Exception {
         log.info("Starting onSchedule execution");
 
-        for (final QuestionnaireConfig config : questionnaireSettings.getQuestionnaires().values()) {
-            log.info("Processing questionnaire config: isBaseline={}, type={}, startDay={}, validDuration={}",
-                    config.isBaseline(),
-                    config.getType(),
-                    config.getStartDay(),
-                    config.getValidDuration());
+        for (final QuestionnaireConfig config : questionnaireSettings.getQuestionnaires().values()) { //loop happens for each F1,F2,F3
             if (!config.isBaseline()) {
 //				baselineCompleted + startDay <= now <=baselineCompleted + startDay + validDuration
 //				thus:
@@ -388,20 +304,16 @@ public class QuestionnaireService {
 //				First, find the patients (via baseline records) that have followup questionnaires due
                 final List<LSQuestionnaireEntity> baselines =
                         //log.info("found baselines n= {}, dates: from {} to {}", baselines.size(), startDate, endDate);
-                         questionnaireRepository.findAllByCompletedDateBetween(Date.from(from), Date.from(to));
-                log.info("found baselines n= {}, dates: from {} to {}, value {}", baselines.size(), from, to, baselines);
-                baselines.forEach(baseline -> {
-                    log.info("Baseline: patientId={}, completedDate={}, tokenId={}",
-                            baseline.getPatientId(),
-                            baseline.getCompletedDate(),
-                            baseline.getTokenId());
-                });
+                        questionnaireRepository.findAllByCompletedDateBetween(Date.from(from), Date.from(to));
+                log.info("found n= {} baselines that are complete, from {} to {}", baselines.size(), from, to);
+
+                // basically we want baselines that are completed already, so we can process followups and followup reminders
+
 
                 for (final LSQuestionnaireEntity baseline : baselines) {
                     final String patientId = baseline.getPatientId();
                     log.info("baseline completion date fetch : {})", baseline.getCompletedDate());
-                    log.info("Processing baseline for patient={}, checking for followup type={}",
-                            patientId, config.getType());
+                    log.info("found baseline for {} (type {}, start {})", patientId, config.getType(), config.getStartDay());
 //					Check if there is no active followup questionnaire
                     final Optional<LSQuestionnaireEntity> followupOpt = questionnaireRepository.findByPatientIdAndType(patientId, config.getType());
                     //log.info("Checking followup type in repo: {}", followupOpt);
@@ -409,17 +321,13 @@ public class QuestionnaireService {
                             log.info("Checking followup type in repo - Patient ID: {}, Type: {}, Entity Details: {}",
                                     patientId,
                                     config.getType(),
-                                    entity)  // This will use toString() of your entity
+                                    entity)  // This will use toString() of entity
                     );
                     if (!followupOpt.isPresent()) {
                         final String tokenId = activateFollowup(patientId, config.getType());
                         log.info("If found, Activated a followup questionnaire for the user {} with token ID = {}", patientId, tokenId);
                     } else {
                         final LSQuestionnaireEntity followup = followupOpt.get();
-                        log.info("Existing followup found: completedDate={}, remindersLeft={}, lastReminder={}",
-                                followup.getCompletedDate(),
-                                followup.getRemindersLeft(),
-                                followup.getLastReminder());
 
                         if (followup.getCompletedDate() == null
                                 && followup.getRemindersLeft() > 0
@@ -427,7 +335,10 @@ public class QuestionnaireService {
                                 followup.getLastReminder().toInstant()
                                         .plus(config.getReminderInterval()))
                         ) {
-//						send reminder if there is the active questionnaire and it is not completed
+                            log.info("Followup is not completed and has still got {} reminders left, need to send reminder, lastReminderSentAt={}",
+                                    followup.getRemindersLeft(),
+                                    followup.getLastReminder());
+//						send reminder if there is the active Followup questionnaire and it is not completed
                             log.info("Sending a reminder to user {} with token ID = {}", patientId, followup.getTokenId());
                             sendReminder(followup.getTokenId(), config.getSurveyId());
                             final LSQuestionnaireEntity updatedFollowup = followup.toBuilder()
@@ -435,6 +346,7 @@ public class QuestionnaireService {
                                     .lastReminder(Date.from(Instant.now()))
                                     .build();
                             questionnaireRepository.save(updatedFollowup);
+                            log.info("Reminder sent for token ID = {}, reminders left are {}",followup.getTokenId(), updatedFollowup.getRemindersLeft());
                         }
                     }
                 }
@@ -447,10 +359,10 @@ public class QuestionnaireService {
                     // TODO : check for sending reminder after completed date is corrected. Uncomment after editing above.
 
                     if (openBL.getRemindersLeft() > 0){
-                         log.info("Sending baseline reminder to patientID {} with token ID = {}", openBL.getPatientId(), openBL.getTokenId());
-                         sendReminder(openBL.getTokenId(), config.getSurveyId());
-                         //reduce the reminder counter in the database
-                         final LSQuestionnaireEntity updatedBL = openBL.toBuilder()
+                        log.info("Sending baseline reminder to patientID {} with token ID = {}", openBL.getPatientId(), openBL.getTokenId());
+                        sendReminder(openBL.getTokenId(), config.getSurveyId());
+                        //reduce the reminder counter in the database
+                        final LSQuestionnaireEntity updatedBL = openBL.toBuilder()
                                 .remindersLeft(openBL.getRemindersLeft() - 1)
                                 .lastReminder(Date.from(Instant.now()))
                                 .build();
@@ -485,7 +397,7 @@ public class QuestionnaireService {
             throw new IllegalStateException("There is no information about the patient ID " + patientId);
         log.info("Adding questionnaire to the patient {} ({})", patientId, questionnaireType);
 
-      //elasticsearchService.saveQuestionnaire(patientId, null, questionnaireType, answers);
+        //elasticsearchService.saveQuestionnaire(patientId, null, questionnaireType, answers);
         elasticsearchService.saveQuestionnaire(patientId, questionnaireType, answers);
 
 

@@ -20,6 +20,9 @@ public class DashboardService {
     @Autowired
     private PatientRepository patientRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public List<LSPatientInfoEntity> getAllPatientInfo() {
         return (List<LSPatientInfoEntity>) lsPatientInfoRepository.findAll();
     }
@@ -28,57 +31,70 @@ public class DashboardService {
         log.info("search for patientID: {} , phone: {}, email: {} ",
                 Patient.getPatientId(), Patient.getPhone(), Patient.getEmail() );
 
-        //PatientEntity existingEmail = patientRepository.findByEmail(Patient.getEmail());
-        //PatientEntity existingPhone = patientRepository.findByPhone(Patient.getPhone());
         PatientEntity existingUser = patientRepository.findByPatientId(Patient.getPatientId());
 
         if (existingUser == null) {
             log.info("user exists: " + existingUser.getPatientId());
             throw new IllegalStateException("Could not find this Username.");
         }
-        /*
-        if (patientRepository.findByEmail(Patient.getEmail()) == null) {
-            log.info("email exists: {} for user {}" , existingEmail.getEmail(), existingEmail.getPatientId());
-            throw new IllegalStateException("Could not find this email.");
-        }
-        if (existingPhone == null) {
-            log.info("phone exists: {} for user {}" , existingPhone.getPhone(), existingPhone.getPatientId());
-            throw new IllegalStateException("Could not find this phone number.");
-        }
 
-         */
         final PatientEntity existingPatient = patientRepository.findByPatientId(Patient.getPatientId());
         final PatientEntity updatedPatient = existingPatient.toBuilder()
                                             .rctGroup(Patient.getRctGroup())
                                             .build();
         patientRepository.save(updatedPatient);
 
-        //LSPatientInfoEntity existingmail = lsPatientInfoRepository.findByEmail(Patient.getEmail());
-        //LSPatientInfoEntity existingphone = lsPatientInfoRepository.findByPhone(Patient.getPhone());
         LSPatientInfoEntity existinguser = lsPatientInfoRepository.findByPatientId(Patient.getPatientId());
 
         if (existinguser == null) {
             log.info("user exists: " + existinguser.getPatientId());
             throw new IllegalStateException("Could not find this Username.");
         }
-        /*
-        if (existingmail == null) {
-            log.info("email exists: {} for user {}" , existingEmail.getEmail(), existingEmail.getPatientId());
-            throw new IllegalStateException("Could not find this email.");
-        }
-        if (existingphone == null) {
-            log.info("phone exists: {} for user {}" , existingphone.getPhone(), existingphone.getPatientId());
-            throw new IllegalStateException("Could not find this phone number.");
-        }
 
-         */
         final LSPatientInfoEntity existingLSPatient = lsPatientInfoRepository.findByPatientId(Patient.getPatientId());
         final LSPatientInfoEntity updatedLSPatient = existingLSPatient.toBuilder()
                                                         .rctGroup(Patient.getRctGroup())
                                                         .build();
         lsPatientInfoRepository.save(updatedLSPatient);
 
+        //TODO :  Check if RctGroup is intervention,
+        // send a mail to user, with link to password-reset webpage, fetch back the password and send to stuart API.
+        // sending an e-Mail for resetting passwords
+		if (updatedLSPatient.getRctGroup().equalsIgnoreCase("intervention")) {
+			log.info("LS - DashboardService - sending email to patientId for appLogin: {}", Patient.getPatientId());
+			emailService.sendEmail(Patient.getEmail(), Patient.getPatientId(), updatedLSPatient.getFirstname() + " " + updatedLSPatient.getLastname());
+		}
+
     }
+
+
+    public void resetPatientGroup(NewPatient Patient){
+        log.info("search for patientID: {} , phone: {}, email: {} ",
+                Patient.getPatientId(), Patient.getPhone(), Patient.getEmail() );
+
+        PatientEntity existingUser = patientRepository.findByPatientId(Patient.getPatientId());
+
+        if (existingUser == null) {
+            log.info("user exists: " + existingUser.getPatientId());
+            throw new IllegalStateException("Could not find this Username.");
+        }
+
+        final PatientEntity existingPatient = patientRepository.findByPatientId(Patient.getPatientId());
+        LSPatientInfoEntity existinguser = lsPatientInfoRepository.findByPatientId(Patient.getPatientId());
+
+        if (existinguser == null) {
+            log.info("user exists: " + existinguser.getPatientId());
+            throw new IllegalStateException("Could not find this Username.");
+        }
+
+        // Verify group is intervention
+        if (existinguser.getRctGroup().equalsIgnoreCase("intervention")) {
+            log.info("LS - DashboardService - sending email to patientId for Resetting password for App: {}", Patient.getPatientId());
+            emailService.sendEmail(Patient.getEmail(), Patient.getPatientId(), existinguser.getFirstname() + " " + existinguser.getLastname());
+        }
+
+    }
+
 
     public void deactivatePatient(NewPatient Patient){
         log.info("search for patientID: {} , phone: {}, email: {} ",

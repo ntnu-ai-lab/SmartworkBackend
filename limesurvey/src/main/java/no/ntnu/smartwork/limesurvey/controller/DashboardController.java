@@ -68,11 +68,15 @@ public class DashboardController {
 
     @PostMapping(value = "/setRCTGroup")
     public void setPatientRCTGroup(@Valid @RequestBody NewPatient patient) throws Exception {
-        log.info("Setting RCT group for patient: {}", patient.getPatientId());
+        log.info("Setting RCT group for patient: {}, group {}", patient.getPatientId(), patient.getRctGroup());
         dashboardService.setPatientGroup(patient);
     }
 
-
+    @PostMapping(value = "/resetPassword")
+    public void resetPassword(@Valid @RequestBody NewPatient patient) throws Exception {
+        log.info("Password Reset request for patient: {}, group {}", patient.getPatientId(), patient.getRctGroup());
+        dashboardService.resetPatientGroup(patient);
+    }
 
     @PostMapping(value = "/deactivate")
     public void deactivatePatient(@Valid @RequestBody NewPatient patient) throws Exception {
