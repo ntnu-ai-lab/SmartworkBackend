@@ -1,0 +1,16 @@
+ dashboard:
+    container_name: dashboard
+    build:
+      dockerfile: Dockerfile_dashboard
+    ports:
+      - "82:80"
+	volumes:
+      - ./dashboard-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+ onboarding:
+    container_name: onboarding
+    build:
+      dockerfile: Dockerfile_onboarding
+    ports:
+      - "81:80"
+    volumes:
+      - ./onboarding-nginx.conf:/etc/nginx/conf.d/default.conf:ro
