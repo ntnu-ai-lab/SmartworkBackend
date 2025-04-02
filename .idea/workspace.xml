@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="ee081934-c251-4289-86df-d7fb9111719d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/limesurvey/src/main/java/no/ntnu/smartwork/limesurvey/service/DashboardService.java" beforeDir="false" afterPath="$PROJECT_DIR$/limesurvey/src/main/java/no/ntnu/smartwork/limesurvey/service/DashboardService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,7 +71,7 @@
       <option name="presentableId" value="Default" />
       <updated>1743514759377</updated>
       <workItem from="1743514760740" duration="3369000" />
-      <workItem from="1743600625445" duration="590000" />
+      <workItem from="1743600625445" duration="3629000" />
     </task>
     <servers />
   </component>

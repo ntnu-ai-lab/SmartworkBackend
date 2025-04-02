@@ -34,7 +34,7 @@ public class DashboardService {
         PatientEntity existingUser = patientRepository.findByPatientId(Patient.getPatientId());
 
         if (existingUser == null) {
-            log.info("user exists: " + existingUser.getPatientId());
+            log.error("User not found with ID: {}", Patient.getPatientId());
             throw new IllegalStateException("Could not find this Username.");
         }
 
@@ -43,12 +43,12 @@ public class DashboardService {
                                             .rctGroup(Patient.getRctGroup())
                                             .build();
         patientRepository.save(updatedPatient);
-
+        log.info("Updated PatientEntity with RCT group: '{}'", Patient.getRctGroup());
         LSPatientInfoEntity existinguser = lsPatientInfoRepository.findByPatientId(Patient.getPatientId());
 
         if (existinguser == null) {
-            log.info("user exists: " + existinguser.getPatientId());
-            throw new IllegalStateException("Could not find this Username.");
+            log.error("LS Patient not found with ID: {}", Patient.getPatientId());
+            throw new IllegalStateException("Could not find this Username in LS Patient Info.");
         }
 
         final LSPatientInfoEntity existingLSPatient = lsPatientInfoRepository.findByPatientId(Patient.getPatientId());
@@ -57,10 +57,9 @@ public class DashboardService {
                                                         .build();
         lsPatientInfoRepository.save(updatedLSPatient);
 
-        //TODO :  Check if RctGroup is intervention,
-        // send a mail to user, with link to password-reset webpage, fetch back the password and send to stuart API.
-        // sending an e-Mail for resetting passwords
-		if (updatedLSPatient.getRctGroup().equalsIgnoreCase("intervention")) {
+        log.info("group {} updated in LSPatientInfoEntity for {} : ", updatedLSPatient.getPatientId(), updatedLSPatient.getRctGroup());
+        log.info("Print RCT group value for debugging : '{}'", Patient.getRctGroup());
+        if (updatedLSPatient.getRctGroup().equalsIgnoreCase("intervention")) {
 			log.info("LS - DashboardService - sending email to patientId for appLogin: {}", Patient.getPatientId());
 			emailService.sendEmail(Patient.getEmail(), Patient.getPatientId(), updatedLSPatient.getFirstname() + " " + updatedLSPatient.getLastname());
 		}
