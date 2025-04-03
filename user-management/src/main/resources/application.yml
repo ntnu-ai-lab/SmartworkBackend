@@ -32,8 +32,8 @@ spring:
     #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
     #url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
     url: ${MYSQL_URL}
-    password: ${MYSQL_USERNAME}
-    username: ${MYSQL_PASSWORD}
+    password: ${MYSQL_PASSWORD}
+    username: ${MYSQL_USERNAME}
 
   jpa:
     hibernate:
