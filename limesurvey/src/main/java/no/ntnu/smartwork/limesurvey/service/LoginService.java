@@ -91,7 +91,7 @@ public class LoginService {
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> tokenResponse = client.send(tokenRequest, HttpResponse.BodyHandlers.ofString());
 
-            //log.info("API Token Response: {}", tokenResponse.body());
+            log.info("API Token Response: {}", tokenResponse.body());
             //log.info("Map is: {}", map.toString());
 
             String accessToken = parseAccessToken(tokenResponse.body());
