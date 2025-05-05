@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "name": "limesurvey",
+      "type": "no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings",
+      "sourceType": "no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings"
+    }
+  ],
+  "properties": [
+    {
+      "name": "limesurvey.questionnaires",
+      "type": "java.util.Map<java.lang.String,no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings$QuestionnaireConfig>",
+      "sourceType": "no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings"
+    },
+    {
+      "name": "limesurvey.rpc-url",
+      "type": "java.lang.String",
+      "description": "LimeSurvey remote procedure call API URL",
+      "sourceType": "no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings"
+    },
+    {
+      "name": "limesurvey.session-timeout",
+      "type": "java.time.Duration",
+      "description": "LimeSurvey session_key timeout.",
+      "sourceType": "no.ntnu.smartwork.limesurvey.config.QuestionnaireSettings"
+    }
+  ],
+  "hints": []
+}

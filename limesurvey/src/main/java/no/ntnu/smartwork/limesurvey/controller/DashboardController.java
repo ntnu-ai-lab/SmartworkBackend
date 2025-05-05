@@ -8,6 +8,8 @@ import no.ntnu.smartwork.limesurvey.db.LSPatientInfoRepository;
 import no.ntnu.smartwork.limesurvey.service.DashboardService;
 import no.ntnu.smartwork.limesurvey.service.QuestionnaireService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -76,6 +78,28 @@ public class DashboardController {
     public void resetPassword(@Valid @RequestBody NewPatient patient) throws Exception {
         log.info("Password Reset request for patient: {}, group {}", patient.getPatientId(), patient.getRctGroup());
         dashboardService.resetPatientGroup(patient);
+    }
+
+    @PostMapping(value = "/forgotPassword")
+    public ResponseEntity<?> checkCredentialsResetPassword(@Valid @RequestBody Map<String, String> request) throws Exception {
+        String email = request.get("email");
+        String userId = request.get("userId");
+        log.info("Checking if this user exists: email: {}, userId: {}", email);
+
+        try {
+            boolean exists = dashboardService.checkUserExists(email, userId);
+            if (exists) {
+                // Send reset password email logic here
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Credentials not found"));
+            }
+        } catch (Exception e) {
+            log.error("Error processing check email and send reset password link request", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "An error occurred while processing your request"));
+        }
     }
 
     @PostMapping(value = "/deactivate")

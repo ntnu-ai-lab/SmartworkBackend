@@ -57,4 +57,5 @@ public class PasswordResetController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid token format");
         }
     }
+
 }

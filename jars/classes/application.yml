@@ -1,0 +1,127 @@
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  ### Only for testing individual microservices, remove during deployment.
+  client:
+    #nabled: true
+    register-with-eureka: true
+    fetch-registry: true
+      #service-url:
+    # defaultZone: http://localhost:8761/eureka/
+
+server.port: 8014
+
+ADD_USER_URL: ${ADD_USER_URL}
+FOLLOWUP_URL: ${FOLLOWUP_URL}
+APP_CRED_URL: ${APP_CRED_URL}
+
+# OAuth Configuration
+APP_CLIENT_ID: ${APP_CLIENT_ID}
+APP_CLIENT_SECRET: ${APP_CLIENT_SECRET}
+APP_API_TOKEN_URI: ${APP_API_TOKEN_URI}
+
+PASSWORD_RESET_URL: ${PASSWORD_RESET_URL}
+
+spring:
+  application:
+    name: limesurvey-service
+  data:
+    elasticsearch:
+      node:
+        name: elasticsearch
+  #   patients database
+  datasource:
+    #url: jdbc:mysql://127.0.0.1:3306/smartwork_usermgmt_dev
+    #url: jdbc:mysql://mysql.idi.ntnu.no:3306/smartwork_usermgmt_dev
+    url:  ${MYSQL_URL}
+    password: ${MYSQL_PASSWORD}
+    username: ${MYSQL_USERNAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        #dialect: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    field-encryption:
+      password: ${JPA_PASSWORD}
+      salt: ${JPA_SALT}
+
+
+microservices:
+  elastic-interface:
+    endpoints:
+      savePatientJson: http://elastic-interface/patientJsons/savePatientJson
+
+limesurvey:
+  username: ${LIMESURVEY_USERNAME}
+  password: ${LIMESURVEY_PASSWORD}
+
+  rpc_url: https://limesurvey.idi.ntnu.no/index.php/admin/remotecontrol
+  #Schedule to run questionnaire service and activate pending questionnaire.
+  #	every 5 seconds (for testing)
+  #cron: 0/50 * * ? * * #Every 50 seconds starting at :00 second after the minute
+  #cron: 0 0 * ? * * #every hour
+  cron: 0 * * ? * * #every minute
+  #cron: 0 */15 * ? * * #At second :00, every 15 minutes starting at minute :00, of every hour
+  # Every day at 12:00.
+  #cron :  0 0 12 ? * *
+
+
+  #   common settings, optional, just to make
+  #    survey_id:438751
+  # Short test survey
+  survey_id: 322800 #202202 for spdev and 322721 for SW-dev  and ... for SW-RCT
+  reminder_count: 2
+  reminder_interval: PT30M #P2d #PT60M for testing, P3d for deployments
+  # see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
+  # for duration format.
+  valid_duration_weekly: P10d #this valid duration is applied to the weekly questionnaires
+  valid_duration_questionnaires: P56d #this valid duration is applied to baseline and followups
+  #    Instead of references to common settings you can assign different values for every questionnaire
+  questionnaires:
+    # To disable a questionnaire just comment/delete it.
+    baseline:
+      type: baseline
+      #The time interval from the completion of the baseline questionnaire
+      # when to start specified one. If for some reason (e.g. the backend was offline)
+      # the questionnaire was not started within valid_duration interval after that
+      # then the backend does not activate the questionnaire.
+      startDay: PT0m    #marks the first questionnaire
+      survey_id: ${limesurvey.survey_id}
+      reminder_count: ${limesurvey.reminder_count}
+      reminder_interval: ${limesurvey.reminder_interval}
+      valid_duration: ${limesurvey.valid_duration_questionnaires}
+
+    followup1:
+      type: followup1
+      startDay: PT59m  #in 3 month #Production
+      #startDay: P1d  #the next day
+      survey_id: ${limesurvey.survey_id}
+      reminder_count: ${limesurvey.reminder_count}
+      reminder_interval: ${limesurvey.reminder_interval}
+      valid_duration: ${limesurvey.valid_duration_questionnaires}
+
+    followup2:
+      type: followup2
+      startDay: PT120m  #in 6 month
+      #startDay: P2d  #2 days after the baseline
+      survey_id: ${limesurvey.survey_id}
+      reminder_count: ${limesurvey.reminder_count}
+      reminder_interval: ${limesurvey.reminder_interval}
+      valid_duration: ${limesurvey.valid_duration_questionnaires}
+
+    followup3:
+      type: followup3
+      startDay: PT180m  #in 12 month
+      #startDay: P3d  #3 days after the baseline
+      survey_id: ${limesurvey.survey_id}
+      reminder_count: ${limesurvey.reminder_count}
+      reminder_interval: ${limesurvey.reminder_interval}
+      valid_duration: ${limesurvey.valid_duration_questionnaires}
+
+
+
+  session_timeout: PT7100s
